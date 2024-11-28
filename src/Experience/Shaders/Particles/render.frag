@@ -6,6 +6,7 @@ uniform lowp float uMid;
 uniform lowp float uTreble;
 
 varying float size;
+varying vec3 vPosition;
 
 // Color utilities
 vec3 hsv2rgb(vec3 c) {
@@ -21,8 +22,8 @@ void main() {
     // Base alpha with softer falloff
     float alpha = smoothstep(0.5, 0.35, dist);
     
-    // Get strand type from position w component
-    float strandType = gl_FragCoord.w;
+    // Use position for consistent strand type
+    float strandType = fract(dot(vPosition.xy, vec2(12.9898, 78.233)));
     
     vec3 color;
     if (size > 1.0) {
@@ -51,16 +52,14 @@ void main() {
         color *= (1.0 + glow * 0.2);
         alpha *= 0.85;
     } else {
-        // Core particles: maintain original color with less variation
+        // Core particles: maintain original color
         color = mix(small, big, 0.5);
-        color *= 1.0 + sin(size * 20.0) * 0.1;
         alpha *= 0.95;
     }
     
-    // Very subtle brightness variation
+    // Audio-based brightness only
     float brightness = 1.0 + (uBass + uMid + uTreble) * 0.15;
     color *= brightness;
     
-    // Final color with reduced intensity
-    gl_FragColor = vec4(color * vec3(1.0 - dist * 0.2), alpha * 0.7);
+    gl_FragColor = vec4(color, alpha * 0.7);
 }

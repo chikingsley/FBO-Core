@@ -8,6 +8,7 @@ uniform lowp float uPointSize;
 uniform lowp float uPixelRatio;
 
 varying float size;
+varying vec3 vPosition;
 
 void main() {
     //the mesh is a normalized square so the uvs = the xy positions of the vertices
@@ -25,4 +26,5 @@ void main() {
     gl_PointSize = pointSize * (1.0 / -viewPosition.z);
     
     size = gl_PointSize;
+    vPosition = position.xyz;
 }

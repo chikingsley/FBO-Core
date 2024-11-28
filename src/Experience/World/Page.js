@@ -81,6 +81,82 @@ export default class Page {
         
         document.body.appendChild(audioButton);
 
+        // Add input logging display
+        this.inputLogDisplay = document.createElement('div');
+        this.inputLogDisplay.style.position = 'fixed';
+        this.inputLogDisplay.style.bottom = '80px';
+        this.inputLogDisplay.style.left = '20px';
+        this.inputLogDisplay.style.padding = '10px';
+        this.inputLogDisplay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+        this.inputLogDisplay.style.color = 'white';
+        this.inputLogDisplay.style.fontFamily = 'monospace';
+        this.inputLogDisplay.style.fontSize = '14px';
+        this.inputLogDisplay.style.borderRadius = '5px';
+        this.inputLogDisplay.style.zIndex = '1000';
+        this.inputLogDisplay.innerHTML = 'Key: None<br>Mouse: Outside Window<br>Z: 0.00';
+        document.body.appendChild(this.inputLogDisplay);
+
+        // Store current mouse position and window state
+        this.mousePosition = { x: 0, y: 0 };
+        this.mouseInWindow = false;
+        this.windowHasFocus = document.hasFocus();
+
+        // Add input event listeners
+        window.addEventListener('keydown', (event) => {
+            const [_, mouseInfo, zInfo] = this.inputLogDisplay.innerHTML.split('<br>');
+            this.inputLogDisplay.innerHTML = `Key: ${event.key}<br>${mouseInfo}<br>${zInfo}`;
+            setTimeout(() => {
+                if (this.inputLogDisplay.innerHTML.startsWith(`Key: ${event.key}`)) {
+                    this.inputLogDisplay.innerHTML = `Key: None<br>${mouseInfo}<br>${zInfo}`;
+                }
+            }, 1000);
+        });
+
+        window.addEventListener('mousemove', (event) => {
+            this.mousePosition.x = event.clientX;
+            this.mousePosition.y = event.clientY;
+            const keyInfo = this.inputLogDisplay.innerHTML.split('<br>')[0];
+            const zInfo = this.inputLogDisplay.innerHTML.split('<br>')[2];
+            const mouseText = this.mouseInWindow ? 
+                `Mouse: (${this.mousePosition.x}, ${this.mousePosition.y})` : 
+                'Mouse: Outside Window';
+            this.inputLogDisplay.innerHTML = `${keyInfo}<br>${mouseText}<br>${zInfo}`;
+        });
+
+        window.addEventListener('mouseenter', () => {
+            this.mouseInWindow = true;
+            const [keyInfo, _, zInfo] = this.inputLogDisplay.innerHTML.split('<br>');
+            this.inputLogDisplay.innerHTML = `${keyInfo}<br>Mouse: (${this.mousePosition.x}, ${this.mousePosition.y})<br>${zInfo}`;
+        });
+
+        window.addEventListener('mouseleave', () => {
+            this.mouseInWindow = false;
+            const [keyInfo, _, zInfo] = this.inputLogDisplay.innerHTML.split('<br>');
+            this.inputLogDisplay.innerHTML = `${keyInfo}<br>Mouse: Outside Window<br>${zInfo}`;
+        });
+
+        window.addEventListener('focus', () => {
+            this.windowHasFocus = true;
+            this.inputLogDisplay.style.opacity = '1.0';
+        });
+
+        window.addEventListener('blur', () => {
+            this.windowHasFocus = false;
+            this.inputLogDisplay.style.opacity = '0.7';
+        });
+
+        window.addEventListener('mousedown', (event) => {
+            const keyInfo = this.inputLogDisplay.innerHTML.split('<br>')[0];
+            const mousePos = this.inputLogDisplay.innerHTML.split('<br>')[1].split(': ')[1];
+            const zInfo = this.inputLogDisplay.innerHTML.split('<br>')[2];
+            this.inputLogDisplay.innerHTML = `${keyInfo}<br>Mouse: ${mousePos} [Button: ${event.button}]<br>${zInfo}`;
+            setTimeout(() => {
+                if (this.inputLogDisplay.innerHTML.includes('[Button:')) {
+                    this.inputLogDisplay.innerHTML = `${keyInfo}<br>Mouse: ${mousePos}<br>${zInfo}`;
+                }
+            }, 1000);
+        });
+
         this.setFBOParticles()
 
         // Initialize separate Stats instances
@@ -400,7 +476,14 @@ export default class Page {
         this.simulationShader.uniforms.frequency.value = frequency;
         this.simulationShader.uniforms.amplitude.value = amplitude;
         this.renderShader.uniforms.uPointSize.value = pointSize;
-        
+
+        // Update Z value in real-time
+        const viewMatrix = this.camera.matrixWorldInverse;
+        const cameraZ = -viewMatrix.elements[14]; // This is the camera's Z position in view space
+        const keyInfo = this.inputLogDisplay.innerHTML.split('<br>')[0];
+        const mouseInfo = this.inputLogDisplay.innerHTML.split('<br>')[1];
+        this.inputLogDisplay.innerHTML = `${keyInfo}<br>${mouseInfo}<br>Z: ${cameraZ.toFixed(2)}`;
+
         this.FBO.particles.rotation.x = Math.cos(Date.now() * .001) * Math.PI / 180 * 2;
         this.FBO.particles.rotation.y -= Math.PI / 180 * .05;
         // End performance measurements
