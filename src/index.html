@@ -44,6 +44,76 @@
 <canvas class="webgl"></canvas>
 <img id="data-texture" src="" alt="">
 
-    <script type="module" src="./script.js"></script>
+<div class="ui-overlay">
+    <button class="test-button" onclick="toggleAudio()">Enable Audio</button>
+</div>
+
+<script type="module" src="./script.js"></script>
+<script>
+    let audioContext = null;
+    let analyser = null;
+    let audioEnabled = false;
+
+    async function toggleAudio() {
+        if (!audioEnabled) {
+            try {
+                // Check if we're on HTTPS or localhost
+                if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
+                    alert('Audio input requires HTTPS or localhost. Current protocol: ' + location.protocol);
+                    return;
+                }
+
+                // Check for browser support
+                if (!navigator.mediaDevices) {
+                    navigator.mediaDevices = {};
+                }
+
+                // Some browsers partially implement mediaDevices
+                if (!navigator.mediaDevices.getUserMedia) {
+                    navigator.mediaDevices.getUserMedia = function(constraints) {
+                        const getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+                        if (!getUserMedia) {
+                            alert('getUserMedia is not implemented in this browser');
+                            return Promise.reject(new Error('getUserMedia is not implemented'));
+                        }
+                        return new Promise(function(resolve, reject) {
+                            getUserMedia.call(navigator, constraints, resolve, reject);
+                        });
+                    }
+                }
+
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                analyser = audioContext.createAnalyser();
+                analyser.fftSize = 32;
+                
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    audio: {
+                        echoCancellation: false,
+                        noiseSuppression: false,
+                        autoGainControl: false
+                    }
+                });
+                const source = audioContext.createMediaStreamSource(stream);
+                source.connect(analyser);
+                
+                audioEnabled = true;
+                document.querySelector('.test-button').textContent = 'Disable Audio';
+                window.audioAnalyser = analyser;
+            } catch (err) {
+                console.error('Audio setup failed:', err);
+                alert('Audio setup failed: ' + err.message);
+            }
+        } else {
+            if (audioContext) {
+                audioContext.close();
+                audioContext = null;
+                analyser = null;
+                window.audioAnalyser = null;
+            }
+            audioEnabled = false;
+            document.querySelector('.test-button').textContent = 'Enable Audio';
+        }
+    }
+</script>
 </body>
 </html>

@@ -204,13 +204,26 @@ export default class Page {
     }
 
     update() {
-
         //update simulation
         this.FBO.update();
 
+        // Simple audio reactivity
+        let amplitude = 46; // default value
+        if (window.audioAnalyser) {
+            const dataArray = new Uint8Array(window.audioAnalyser.frequencyBinCount);
+            window.audioAnalyser.getByteFrequencyData(dataArray);
+            
+            // Get average of all frequencies
+            const average = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
+            
+            // Map 0-255 to 46-92 (double the default amplitude)
+            amplitude = 46 + (average / 255) * 46;
+        }
+
         //update mesh
         this.simulationShader.uniforms.timer.value += 0.01;
-        this.FBO.particles.rotation.x = Math.cos( Date.now() *.001 ) * Math.PI / 180 * 2;
+        this.simulationShader.uniforms.amplitude.value = amplitude;
+        this.FBO.particles.rotation.x = Math.cos(Date.now() * .001) * Math.PI / 180 * 2;
         this.FBO.particles.rotation.y -= Math.PI / 180 * .05;
     }
 }
