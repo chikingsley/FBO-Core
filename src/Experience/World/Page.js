@@ -207,22 +207,52 @@ export default class Page {
         //update simulation
         this.FBO.update();
 
-        // Simple audio reactivity
-        let amplitude = 46; // default value
-        if (window.audioAnalyser) {
-            const dataArray = new Uint8Array(window.audioAnalyser.frequencyBinCount);
-            window.audioAnalyser.getByteFrequencyData(dataArray);
-            
-            // Get average of all frequencies
-            const average = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
-            
-            // Map 0-255 to 46-92 (double the default amplitude)
-            amplitude = 46 + (average / 255) * 46;
+        // Get audio data if available
+        let freqData = { low: 0, mid: 0, high: 0 };
+        let mode = null;
+        
+        if (window.getFrequencyRange) {
+            freqData = window.getFrequencyRange();
+            mode = window.getCurrentMode();
+        }
+
+        console.log('Frequency Data:', freqData);
+        console.log('Current Mode:', mode);
+
+        // Default values
+        let amplitude = 46;
+        let frequency = 0.01;
+        let pointSize = 320;
+        let timer = 0.01;
+
+        // Apply audio effects based on mode
+        switch(mode) {
+            case 'spread':
+                amplitude = 46 + (freqData.low / 255) * 46;
+                break;
+            case 'speed':
+                frequency = 0.01 + (freqData.mid / 255) * 0.02;
+                timer = 0.01 + (freqData.mid / 255) * 0.02;
+                break;
+            case 'size':
+                pointSize = 320 + (freqData.high / 255) * 320;
+                break;
+            case 'color':
+                const intensity = freqData.mid / 255;
+                console.log('Intensity:', intensity);
+                const hue = (intensity * 360) % 360; // Map intensity to hue range
+                const color = new THREE.Color();
+                color.setHSL(hue / 360, 0.7, 0.5); // Set color using HSL
+                this.renderShader.uniforms.big.value = color;
+                break;
         }
 
         //update mesh
-        this.simulationShader.uniforms.timer.value += 0.01;
+        this.simulationShader.uniforms.timer.value += timer;
+        this.simulationShader.uniforms.frequency.value = frequency;
         this.simulationShader.uniforms.amplitude.value = amplitude;
+        this.renderShader.uniforms.uPointSize.value = pointSize;
+        
         this.FBO.particles.rotation.x = Math.cos(Date.now() * .001) * Math.PI / 180 * 2;
         this.FBO.particles.rotation.y -= Math.PI / 180 * .05;
     }

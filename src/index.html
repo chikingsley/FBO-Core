@@ -46,6 +46,10 @@
 
 <div class="ui-overlay">
     <button class="test-button" onclick="toggleAudio()">Enable Audio</button>
+    <button class="test-button" onclick="setMode('spread')" id="spread">Spread</button>
+    <button class="test-button" onclick="setMode('speed')" id="speed">Speed</button>
+    <button class="test-button" onclick="setMode('size')" id="size">Size</button>
+    <button class="test-button" onclick="setMode('color')" id="color">Color</button>
 </div>
 
 <script type="module" src="./script.js"></script>
@@ -53,22 +57,48 @@
     let audioContext = null;
     let analyser = null;
     let audioEnabled = false;
+    let currentMode = null;
+    
+    // Audio frequency ranges
+    const getFrequencyRange = () => {
+        if (!analyser) return { low: 0, mid: 0, high: 0 };
+        
+        const dataArray = new Uint8Array(analyser.frequencyBinCount);
+        analyser.getByteFrequencyData(dataArray);
+        
+        const low = dataArray.slice(0, 8).reduce((a,b) => a + b, 0) / 8;
+        const mid = dataArray.slice(8, 16).reduce((a,b) => a + b, 0) / 8;
+        const high = dataArray.slice(16, 24).reduce((a,b) => a + b, 0) / 8;
+        
+        return { low, mid, high };
+    };
+
+    function setMode(mode) {
+        // Clear all active states
+        document.querySelectorAll('.test-button').forEach(btn => {
+            if (btn.id) btn.classList.remove('active');
+        });
+        
+        if (currentMode === mode) {
+            currentMode = null;
+        } else {
+            currentMode = mode;
+            document.getElementById(mode).classList.add('active');
+        }
+    }
 
     async function toggleAudio() {
         if (!audioEnabled) {
             try {
-                // Check if we're on HTTPS or localhost
                 if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
                     alert('Audio input requires HTTPS or localhost. Current protocol: ' + location.protocol);
                     return;
                 }
 
-                // Check for browser support
                 if (!navigator.mediaDevices) {
                     navigator.mediaDevices = {};
                 }
 
-                // Some browsers partially implement mediaDevices
                 if (!navigator.mediaDevices.getUserMedia) {
                     navigator.mediaDevices.getUserMedia = function(constraints) {
                         const getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
@@ -99,6 +129,8 @@
                 audioEnabled = true;
                 document.querySelector('.test-button').textContent = 'Disable Audio';
                 window.audioAnalyser = analyser;
+                window.getFrequencyRange = getFrequencyRange;
+                window.getCurrentMode = () => currentMode;
             } catch (err) {
                 console.error('Audio setup failed:', err);
                 alert('Audio setup failed: ' + err.message);
@@ -109,9 +141,12 @@
                 audioContext = null;
                 analyser = null;
                 window.audioAnalyser = null;
+                window.getFrequencyRange = null;
+                window.getCurrentMode = null;
             }
             audioEnabled = false;
             document.querySelector('.test-button').textContent = 'Enable Audio';
+            setMode(null);
         }
     }
 </script>

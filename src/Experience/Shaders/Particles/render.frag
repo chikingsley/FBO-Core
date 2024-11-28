@@ -5,14 +5,10 @@ uniform vec3 big;
 varying float size;
 void main()
 {
-
-
-
-    gl_FragColor = vec4( 0.8, .5, 0.1, 0.8 );
-
-//    if( size > 1. )
-//    {
-//        gl_FragColor = vec4( big * vec3( 1. - length( gl_PointCoord.xy-vec2(.5) ) ) * 1.5, .95 );
-//    }
-
+    // Use the `big` color for particles based on size
+    if (size > 1.0) {
+        gl_FragColor = vec4(big * vec3(1.0 - length(gl_PointCoord.xy - vec2(0.5))) * 1.5, 0.95);
+    } else {
+        gl_FragColor = vec4(small, 0.8);
+    }
 }
