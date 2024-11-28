@@ -10,9 +10,8 @@ import simFragment from '../Shaders/Particles/simulation.frag';
 import renderVertex from '../Shaders/Particles/render.vert';
 import renderFragment from '../Shaders/Particles/render.frag';
 
-
-
 import FBO from "../Utils/FBO.js";
+import Stats from 'three/examples/jsm/libs/stats.module.js'
 
 export default class Page {
     constructor() {
@@ -29,6 +28,64 @@ export default class Page {
         this.cursor = this.experience.cursor
 
         this.setFBOParticles()
+
+        // Initialize separate Stats instances
+        this.statsContainer = document.createElement('div')
+        this.statsContainer.style.position = 'absolute'
+        this.statsContainer.style.top = '0px'
+        this.statsContainer.style.right = '0px'
+        document.body.appendChild(this.statsContainer)
+
+        // Create and style labels container
+        const createStatsGroup = (label, target, stats) => {
+            const group = document.createElement('div')
+            group.style.marginBottom = '4px'
+            
+            const labelElem = document.createElement('div')
+            labelElem.style.display = 'flex'
+            labelElem.style.justifyContent = 'space-between'
+            labelElem.style.color = '#fff'
+            labelElem.style.fontSize = '12px'
+            labelElem.style.fontFamily = 'monospace'
+            labelElem.style.position = 'relative'
+            labelElem.style.padding = '2px 4px'
+            labelElem.style.backgroundColor = 'rgba(0,0,0,0.5)'
+            labelElem.style.borderRadius = '2px'
+            labelElem.style.marginBottom = '2px'
+            
+            const nameSpan = document.createElement('span')
+            nameSpan.textContent = label
+            
+            const targetSpan = document.createElement('span')
+            targetSpan.textContent = target
+            targetSpan.style.color = '#8f8'
+            targetSpan.style.marginLeft = '8px'
+            
+            labelElem.appendChild(nameSpan)
+            labelElem.appendChild(targetSpan)
+            
+            group.appendChild(labelElem)
+            group.appendChild(stats.dom)
+            return group
+        }
+
+        // FPS panel with label and target
+        this.fpsStats = new Stats()
+        this.fpsStats.showPanel(0)
+        this.fpsStats.dom.style.position = 'relative'
+        this.statsContainer.appendChild(createStatsGroup('FPS', '>60', this.fpsStats))
+
+        // MS panel with label and target
+        this.msStats = new Stats()
+        this.msStats.showPanel(1)
+        this.msStats.dom.style.position = 'relative'
+        this.statsContainer.appendChild(createStatsGroup('MS', '<16', this.msStats))
+
+        // MB panel with label and target
+        this.mbStats = new Stats()
+        this.mbStats.showPanel(2)
+        this.mbStats.dom.style.position = 'relative'
+        this.statsContainer.appendChild(createStatsGroup('MB', '<10', this.mbStats))
     }
 
     makeTexture(g){
@@ -204,6 +261,10 @@ export default class Page {
     }
 
     update() {
+        // Begin performance measurements
+        this.fpsStats.begin()
+        this.msStats.begin()
+        this.mbStats.begin()
         //update simulation
         this.FBO.update();
 
@@ -215,9 +276,6 @@ export default class Page {
             freqData = window.getFrequencyRange();
             mode = window.getCurrentMode();
         }
-
-        console.log('Frequency Data:', freqData);
-        console.log('Current Mode:', mode);
 
         // Default values
         let amplitude = 46;
@@ -255,5 +313,9 @@ export default class Page {
         
         this.FBO.particles.rotation.x = Math.cos(Date.now() * .001) * Math.PI / 180 * 2;
         this.FBO.particles.rotation.y -= Math.PI / 180 * .05;
+        // End performance measurements
+        this.fpsStats.end()
+        this.msStats.end()
+        this.mbStats.end()
     }
 }
