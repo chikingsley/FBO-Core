@@ -297,7 +297,6 @@ export default class Page {
                 break;
             case 'color':
                 const intensity = freqData.mid / 255;
-                console.log('Intensity:', intensity);
                 const hue = (intensity * 360) % 360; // Map intensity to hue range
                 const color = new THREE.Color();
                 color.setHSL(hue / 360, 0.7, 0.5); // Set color using HSL
