@@ -82,20 +82,87 @@ export default class Page {
         
         document.body.appendChild(audioButton);
 
-        // Add input logging display
-        this.inputLogDisplay = document.createElement('div');
-        this.inputLogDisplay.style.position = 'fixed';
-        this.inputLogDisplay.style.bottom = '80px';
-        this.inputLogDisplay.style.left = '20px';
-        this.inputLogDisplay.style.padding = '10px';
-        this.inputLogDisplay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
-        this.inputLogDisplay.style.color = 'white';
-        this.inputLogDisplay.style.fontFamily = 'monospace';
-        this.inputLogDisplay.style.fontSize = '14px';
-        this.inputLogDisplay.style.borderRadius = '5px';
-        this.inputLogDisplay.style.zIndex = '1000';
-        this.inputLogDisplay.innerHTML = 'Key: None<br>Mouse: Outside Window<br>Z: 0.00';
-        document.body.appendChild(this.inputLogDisplay);
+        // Initialize separate Stats instances
+        this.statsContainer = document.createElement('div')
+        this.statsContainer.style.position = 'absolute'
+        this.statsContainer.style.right = '0px'
+        this.statsContainer.style.top = '0px'
+        this.statsContainer.style.padding = '10px'
+        this.statsContainer.style.display = 'flex'
+        this.statsContainer.style.flexDirection = 'column'
+        this.statsContainer.style.gap = '8px'
+        document.body.appendChild(this.statsContainer)
+
+        // Create and style labels container
+        const createStatsGroup = (label, target, stats) => {
+            const group = document.createElement('div')
+            group.style.marginBottom = '4px'
+            group.style.backgroundColor = 'rgba(0,0,0,0.2)'
+            group.style.borderRadius = '4px'
+            group.style.padding = '4px'
+            
+            const labelElem = document.createElement('div')
+            labelElem.style.display = 'flex'
+            labelElem.style.justifyContent = 'space-between'
+            labelElem.style.color = '#fff'
+            labelElem.style.fontSize = '12px'
+            labelElem.style.fontFamily = 'monospace'
+            labelElem.style.position = 'relative'
+            labelElem.style.padding = '2px 4px'
+            labelElem.style.backgroundColor = 'rgba(0,0,0,0.5)'
+            labelElem.style.borderRadius = '2px'
+            labelElem.style.marginBottom = '2px'
+            labelElem.style.backdropFilter = 'blur(4px)'
+            
+            const nameSpan = document.createElement('span')
+            nameSpan.textContent = label
+            
+            const targetSpan = document.createElement('span')
+            targetSpan.textContent = target
+            targetSpan.style.color = '#8f8'
+            targetSpan.style.marginLeft = '8px'
+            
+            labelElem.appendChild(nameSpan)
+            labelElem.appendChild(targetSpan)
+            
+            group.appendChild(labelElem)
+            stats.dom.style.margin = '0'
+            group.appendChild(stats.dom)
+            return group
+        }
+
+        // FPS panel with label and target
+        this.fpsStats = new Stats()
+        this.fpsStats.showPanel(0)
+        this.fpsStats.dom.style.position = 'relative'
+        this.statsContainer.appendChild(createStatsGroup('FPS', '>40', this.fpsStats))
+
+        // MS panel with label and target
+        this.msStats = new Stats()
+        this.msStats.showPanel(1)
+        this.msStats.dom.style.position = 'relative'
+        this.statsContainer.appendChild(createStatsGroup('MS', '<25', this.msStats))
+
+        // MB panel with label and target
+        this.mbStats = new Stats()
+        this.mbStats.showPanel(2)
+        this.mbStats.dom.style.position = 'relative'
+        this.statsContainer.appendChild(createStatsGroup('MB', '<10', this.mbStats))
+
+        // Add debug info card under stats
+        this.inputLogDisplay = document.createElement('div')
+        this.inputLogDisplay.style.position = 'relative'
+        this.inputLogDisplay.style.padding = '10px'
+        this.inputLogDisplay.style.color = 'white'
+        this.inputLogDisplay.style.fontFamily = 'monospace'
+        this.inputLogDisplay.style.fontSize = '12px'
+        this.inputLogDisplay.style.marginTop = '10px'
+        this.inputLogDisplay.style.backgroundColor = 'rgba(0, 0, 0, 0.0)'
+        this.inputLogDisplay.style.border = '1px dashed rgba(255, 255, 255, 0.3)'
+        this.inputLogDisplay.style.borderRadius = '4px'
+        this.inputLogDisplay.style.backdropFilter = 'blur(4px)'
+        this.inputLogDisplay.innerHTML = 'Key: None<br>Mouse: Outside Window<br>Z: 0.00'
+        this.statsContainer.appendChild(this.inputLogDisplay)
 
         // Store current mouse position and window state
         this.mousePosition = { x: 0, y: 0 };
@@ -159,64 +226,6 @@ export default class Page {
         });
 
         this.setFBOParticles()
-
-        // Initialize separate Stats instances
-        this.statsContainer = document.createElement('div')
-        this.statsContainer.style.position = 'absolute'
-        this.statsContainer.style.left = '0px'
-        this.statsContainer.style.top = '0px'
-        document.body.appendChild(this.statsContainer)
-
-        // Create and style labels container
-        const createStatsGroup = (label, target, stats) => {
-            const group = document.createElement('div')
-            group.style.marginBottom = '4px'
-            
-            const labelElem = document.createElement('div')
-            labelElem.style.display = 'flex'
-            labelElem.style.justifyContent = 'space-between'
-            labelElem.style.color = '#fff'
-            labelElem.style.fontSize = '12px'
-            labelElem.style.fontFamily = 'monospace'
-            labelElem.style.position = 'relative'
-            labelElem.style.padding = '2px 4px'
-            labelElem.style.backgroundColor = 'rgba(0,0,0,0.5)'
-            labelElem.style.borderRadius = '2px'
-            labelElem.style.marginBottom = '2px'
-            
-            const nameSpan = document.createElement('span')
-            nameSpan.textContent = label
-            
-            const targetSpan = document.createElement('span')
-            targetSpan.textContent = target
-            targetSpan.style.color = '#8f8'
-            targetSpan.style.marginLeft = '8px'
-            
-            labelElem.appendChild(nameSpan)
-            labelElem.appendChild(targetSpan)
-            
-            group.appendChild(labelElem)
-            group.appendChild(stats.dom)
-            return group
-        }
-
-        // FPS panel with label and target
-        this.fpsStats = new Stats()
-        this.fpsStats.showPanel(0)
-        this.fpsStats.dom.style.position = 'relative'
-        this.statsContainer.appendChild(createStatsGroup('FPS', '>40', this.fpsStats))
-
-        // MS panel with label and target
-        this.msStats = new Stats()
-        this.msStats.showPanel(1)
-        this.msStats.dom.style.position = 'relative'
-        this.statsContainer.appendChild(createStatsGroup('MS', '<25', this.msStats))
-
-        // MB panel with label and target
-        this.mbStats = new Stats()
-        this.mbStats.showPanel(2)
-        this.mbStats.dom.style.position = 'relative'
-        this.statsContainer.appendChild(createStatsGroup('MB', '<10', this.mbStats))
 
         // Initialize SwaggerUI
         this.swaggerUI = new SwaggerUI('swagger-ui');
