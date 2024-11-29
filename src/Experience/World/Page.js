@@ -11,7 +11,8 @@ import renderVertex from '../Shaders/Particles/render.vert';
 import renderFragment from '../Shaders/Particles/render.frag';
 
 import FBO from "../Utils/FBO.js";
-import Stats from 'three/examples/jsm/libs/stats.module.js'
+import Stats from 'stats.js'
+import { SwaggerUI } from '../../components/SwaggerUI'
 
 export default class Page {
     constructor() {
@@ -162,8 +163,8 @@ export default class Page {
         // Initialize separate Stats instances
         this.statsContainer = document.createElement('div')
         this.statsContainer.style.position = 'absolute'
+        this.statsContainer.style.left = '0px'
         this.statsContainer.style.top = '0px'
-        this.statsContainer.style.right = '0px'
         document.body.appendChild(this.statsContainer)
 
         // Create and style labels container
@@ -203,19 +204,55 @@ export default class Page {
         this.fpsStats = new Stats()
         this.fpsStats.showPanel(0)
         this.fpsStats.dom.style.position = 'relative'
-        this.statsContainer.appendChild(createStatsGroup('FPS', '>60', this.fpsStats))
+        this.statsContainer.appendChild(createStatsGroup('FPS', '>40', this.fpsStats))
 
         // MS panel with label and target
         this.msStats = new Stats()
         this.msStats.showPanel(1)
         this.msStats.dom.style.position = 'relative'
-        this.statsContainer.appendChild(createStatsGroup('MS', '<16', this.msStats))
+        this.statsContainer.appendChild(createStatsGroup('MS', '<25', this.msStats))
 
         // MB panel with label and target
         this.mbStats = new Stats()
         this.mbStats.showPanel(2)
         this.mbStats.dom.style.position = 'relative'
         this.statsContainer.appendChild(createStatsGroup('MB', '<10', this.mbStats))
+
+        // Initialize SwaggerUI
+        this.swaggerUI = new SwaggerUI('swagger-ui');
+
+        // Create API docs button
+        const apiDocsButton = document.createElement('button');
+        apiDocsButton.textContent = 'API Docs';
+        apiDocsButton.style.position = 'fixed';
+        apiDocsButton.style.right = '20px';
+        apiDocsButton.style.bottom = '20px';
+        apiDocsButton.style.padding = '10px 20px';
+        apiDocsButton.style.backgroundColor = '#34495e';
+        apiDocsButton.style.color = 'white';
+        apiDocsButton.style.border = 'none';
+        apiDocsButton.style.borderRadius = '5px';
+        apiDocsButton.style.cursor = 'pointer';
+        apiDocsButton.style.fontSize = '14px';
+        apiDocsButton.style.fontFamily = 'Arial, sans-serif';
+        apiDocsButton.style.transition = 'all 0.3s ease';
+        apiDocsButton.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
+        apiDocsButton.style.zIndex = '999';
+
+        apiDocsButton.addEventListener('mouseenter', () => {
+            apiDocsButton.style.backgroundColor = '#2c3e50';
+            apiDocsButton.style.boxShadow = '0 4px 8px rgba(0,0,0,0.3)';
+        });
+        apiDocsButton.addEventListener('mouseleave', () => {
+            apiDocsButton.style.backgroundColor = '#34495e';
+            apiDocsButton.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
+        });
+        apiDocsButton.addEventListener('click', () => {
+            this.swaggerUI.toggle();
+        });
+
+        document.body.appendChild(apiDocsButton);
+
     }
 
     makeTexture(g){

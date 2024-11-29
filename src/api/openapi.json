@@ -1,0 +1,191 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Emotion Visualization API",
+    "version": "1.0.0",
+    "description": "Real-time emotion analysis API for visualization"
+  },
+  "servers": [
+    {
+      "url": "wss://api.hume.ai/v0/stream/models",
+      "description": "Hume AI WebSocket Server"
+    }
+  ],
+  "paths": {
+    "/face": {
+      "get": {
+        "tags": ["Face Analysis"],
+        "summary": "Stream face emotions",
+        "description": "WebSocket endpoint for real-time face emotion detection",
+        "parameters": [
+          {
+            "name": "apikey",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your Hume AI API key"
+          }
+        ],
+        "responses": {
+          "101": {
+            "description": "WebSocket connection established",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FaceResponse"
+                },
+                "example": {
+                  "face": {
+                    "predictions": [
+                      {
+                        "emotions": [
+                          {
+                            "name": "Joy",
+                            "score": 0.85
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/prosody": {
+      "get": {
+        "tags": ["Voice Analysis"],
+        "summary": "Stream voice prosody",
+        "description": "WebSocket endpoint for real-time voice prosody analysis",
+        "parameters": [
+          {
+            "name": "apikey",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your Hume AI API key"
+          }
+        ],
+        "responses": {
+          "101": {
+            "description": "WebSocket connection established",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProsodyResponse"
+                },
+                "example": {
+                  "prosody": {
+                    "predictions": [
+                      {
+                        "emotions": [
+                          {
+                            "name": "Confidence",
+                            "score": 0.75
+                          }
+                        ],
+                        "qualities": {
+                          "pitch": 220.5,
+                          "volume": 0.8
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Emotion": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Joy"
+          },
+          "score": {
+            "type": "number",
+            "format": "float",
+            "minimum": 0,
+            "maximum": 1,
+            "example": 0.85
+          }
+        }
+      },
+      "FaceResponse": {
+        "type": "object",
+        "properties": {
+          "face": {
+            "type": "object",
+            "properties": {
+              "predictions": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "emotions": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Emotion"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "ProsodyResponse": {
+        "type": "object",
+        "properties": {
+          "prosody": {
+            "type": "object",
+            "properties": {
+              "predictions": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "emotions": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Emotion"
+                      }
+                    },
+                    "qualities": {
+                      "type": "object",
+                      "properties": {
+                        "pitch": {
+                          "type": "number",
+                          "description": "Fundamental frequency in Hz"
+                        },
+                        "volume": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 1,
+                          "description": "Audio volume level"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
