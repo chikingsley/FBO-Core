@@ -8,10 +8,11 @@ const ApiDocsButton = ({ onToggle, className = '' }) => {
     <Button
       onClick={onToggle}
       variant="secondary"
-      className={`fixed bottom-5 right-5 z-50 ${className}`}
+      size="sm"
+      className={`relative flex items-center gap-2 ${className}`}
     >
-      <FileText className="mr-2 h-4 w-4" />
-      API Docs
+      <FileText className="h-4 w-4" />
+      <span>API Docs</span>
     </Button>
   );
 };

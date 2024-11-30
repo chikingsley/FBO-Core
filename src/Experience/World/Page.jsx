@@ -12,7 +12,7 @@ import renderFragment from '../Shaders/Particles/render.frag';
 
 import FBO from "../Utils/FBO.js";
 import Stats from 'stats.js'
-import { SwaggerUI } from '../../components/SwaggerUI'
+import { SwaggerUI } from '../../components/SwaggerUI.js'
 import AudioSystem from '../Audio/AudioSystem.js'
 
 export default class Page {
