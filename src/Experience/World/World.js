@@ -1,6 +1,6 @@
 import Experience from '../Experience.js'
 import Environment from './Environment.js'
-import Page from './Page.jsx'
+import Page from './Page.js'
 import Sun from './Sun.js'
 
 export default class World
