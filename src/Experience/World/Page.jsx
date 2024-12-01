@@ -29,189 +29,23 @@ export default class Page {
         this.isMobile = this.experience.isMobile
         this.cursor = this.experience.cursor
 
-        // Initialize separate Stats instances
-        this.statsContainer = document.createElement('div')
-        this.statsContainer.style.position = 'absolute'
-        this.statsContainer.style.right = '0px'
-        this.statsContainer.style.top = '0px'
-        this.statsContainer.style.padding = '10px'
-        this.statsContainer.style.display = 'flex'
-        this.statsContainer.style.flexDirection = 'column'
-        this.statsContainer.style.gap = '8px'
-        document.body.appendChild(this.statsContainer)
+        // Create UI overlay container
+        const uiOverlay = document.createElement('div')
+        uiOverlay.className = 'ui-overlay'
+        document.body.appendChild(uiOverlay)
 
-        // Create and style labels container
-        const createStatsGroup = (label, target, stats) => {
-            const group = document.createElement('div')
-            group.style.marginBottom = '4px'
-            group.style.backgroundColor = 'rgba(0,0,0,0.2)'
-            group.style.borderRadius = '4px'
-            group.style.padding = '4px'
-            
-            const labelElem = document.createElement('div')
-            labelElem.style.display = 'flex'
-            labelElem.style.justifyContent = 'space-between'
-            labelElem.style.color = '#fff'
-            labelElem.style.fontSize = '12px'
-            labelElem.style.fontFamily = 'monospace'
-            labelElem.style.position = 'relative'
-            labelElem.style.padding = '2px 4px'
-            labelElem.style.backgroundColor = 'rgba(0,0,0,0.5)'
-            labelElem.style.borderRadius = '2px'
-            labelElem.style.marginBottom = '2px'
-            labelElem.style.backdropFilter = 'blur(4px)'
-            
-            const nameSpan = document.createElement('span')
-            nameSpan.textContent = label
-            
-            const targetSpan = document.createElement('span')
-            targetSpan.textContent = target
-            targetSpan.style.color = '#8f8'
-            targetSpan.style.marginLeft = '8px'
-            
-            labelElem.appendChild(nameSpan)
-            labelElem.appendChild(targetSpan)
-            
-            group.appendChild(labelElem)
-            stats.dom.style.margin = '0'
-            group.appendChild(stats.dom)
-            return group
-        }
+        // Add StatsPanel
+        const statsPanel = document.createElement('ui-stats-panel')
+        uiOverlay.appendChild(statsPanel)
 
-        // FPS panel with label and target
-        this.fpsStats = new Stats()
-        this.fpsStats.showPanel(0)
-        this.fpsStats.dom.style.position = 'relative'
-        this.statsContainer.appendChild(createStatsGroup('FPS', '>40', this.fpsStats))
-
-        // MS panel with label and target
-        this.msStats = new Stats()
-        this.msStats.showPanel(1)
-        this.msStats.dom.style.position = 'relative'
-        this.statsContainer.appendChild(createStatsGroup('MS', '<25', this.msStats))
-
-        // MB panel with label and target
-        this.mbStats = new Stats()
-        this.mbStats.showPanel(2)
-        this.mbStats.dom.style.position = 'relative'
-        this.statsContainer.appendChild(createStatsGroup('MB', '<10', this.mbStats))
-
-        // Add debug info card under stats
-        this.inputLogDisplay = document.createElement('div')
-        this.inputLogDisplay.style.position = 'relative'
-        this.inputLogDisplay.style.padding = '10px'
-        this.inputLogDisplay.style.color = 'white'
-        this.inputLogDisplay.style.fontFamily = 'monospace'
-        this.inputLogDisplay.style.fontSize = '12px'
-        this.inputLogDisplay.style.marginTop = '10px'
-        this.inputLogDisplay.style.backgroundColor = 'rgba(0, 0, 0, 0.0)'
-        this.inputLogDisplay.style.border = '1px dashed rgba(255, 255, 255, 0.3)'
-        this.inputLogDisplay.style.borderRadius = '4px'
-        this.inputLogDisplay.style.backdropFilter = 'blur(4px)'
-        this.inputLogDisplay.innerHTML = 'Key: None<br>Mouse: Outside Window<br>Z: 0.00'
-        this.statsContainer.appendChild(this.inputLogDisplay)
-
-        // Store current mouse position and window state
-        this.mousePosition = { x: 0, y: 0 };
-        this.mouseInWindow = false;
-        this.windowHasFocus = document.hasFocus();
-
-        // Add input event listeners
-        window.addEventListener('keydown', (event) => {
-            const [_, mouseInfo, zInfo] = this.inputLogDisplay.innerHTML.split('<br>');
-            this.inputLogDisplay.innerHTML = `Key: ${event.key}<br>${mouseInfo}<br>${zInfo}`;
-            setTimeout(() => {
-                if (this.inputLogDisplay.innerHTML.startsWith(`Key: ${event.key}`)) {
-                    this.inputLogDisplay.innerHTML = `Key: None<br>${mouseInfo}<br>${zInfo}`;
-                }
-            }, 1000);
-        });
-
-        window.addEventListener('mousemove', (event) => {
-            this.mousePosition.x = event.clientX;
-            this.mousePosition.y = event.clientY;
-            const keyInfo = this.inputLogDisplay.innerHTML.split('<br>')[0];
-            const zInfo = this.inputLogDisplay.innerHTML.split('<br>')[2];
-            const mouseText = this.mouseInWindow ? 
-                `Mouse: (${this.mousePosition.x}, ${this.mousePosition.y})` : 
-                'Mouse: Outside Window';
-            this.inputLogDisplay.innerHTML = `${keyInfo}<br>${mouseText}<br>${zInfo}`;
-        });
-
-        window.addEventListener('mouseenter', () => {
-            this.mouseInWindow = true;
-            const [keyInfo, _, zInfo] = this.inputLogDisplay.innerHTML.split('<br>');
-            this.inputLogDisplay.innerHTML = `${keyInfo}<br>Mouse: (${this.mousePosition.x}, ${this.mousePosition.y})<br>${zInfo}`;
-        });
-
-        window.addEventListener('mouseleave', () => {
-            this.mouseInWindow = false;
-            const [keyInfo, _, zInfo] = this.inputLogDisplay.innerHTML.split('<br>');
-            this.inputLogDisplay.innerHTML = `${keyInfo}<br>Mouse: Outside Window<br>${zInfo}`;
-        });
-
-        window.addEventListener('focus', () => {
-            this.windowHasFocus = true;
-            this.inputLogDisplay.style.opacity = '1.0';
-        });
-
-        window.addEventListener('blur', () => {
-            this.windowHasFocus = false;
-            this.inputLogDisplay.style.opacity = '0.7';
-        });
-
-        window.addEventListener('mousedown', (event) => {
-            const keyInfo = this.inputLogDisplay.innerHTML.split('<br>')[0];
-            const mousePos = this.inputLogDisplay.innerHTML.split('<br>')[1].split(': ')[1];
-            const zInfo = this.inputLogDisplay.innerHTML.split('<br>')[2];
-            this.inputLogDisplay.innerHTML = `${keyInfo}<br>Mouse: ${mousePos} [Button: ${event.button}]<br>${zInfo}`;
-            setTimeout(() => {
-                if (this.inputLogDisplay.innerHTML.includes('[Button:')) {
-                    this.inputLogDisplay.innerHTML = `${keyInfo}<br>Mouse: ${mousePos}<br>${zInfo}`;
-                }
-            }, 1000);
-        });
+        // Add InputLogger
+        const inputLogger = document.createElement('ui-input-logger')
+        uiOverlay.appendChild(inputLogger)
 
         // Initialize AudioSystem before FBO setup
         this.audioSystem = new AudioSystem()
 
         this.setFBOParticles()
-
-        // Initialize SwaggerUI
-        this.swaggerUI = new SwaggerUI('swagger-ui');
-
-        // Create API docs button
-        const apiDocsButton = document.createElement('button');
-        apiDocsButton.textContent = 'API Docs';
-        apiDocsButton.style.position = 'fixed';
-        apiDocsButton.style.right = '20px';
-        apiDocsButton.style.bottom = '20px';
-        apiDocsButton.style.padding = '10px 20px';
-        apiDocsButton.style.backgroundColor = '#34495e';
-        apiDocsButton.style.color = 'white';
-        apiDocsButton.style.border = 'none';
-        apiDocsButton.style.borderRadius = '5px';
-        apiDocsButton.style.cursor = 'pointer';
-        apiDocsButton.style.fontSize = '14px';
-        apiDocsButton.style.fontFamily = 'Arial, sans-serif';
-        apiDocsButton.style.transition = 'all 0.3s ease';
-        apiDocsButton.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
-        apiDocsButton.style.zIndex = '999';
-
-        apiDocsButton.addEventListener('mouseenter', () => {
-            apiDocsButton.style.backgroundColor = '#2c3e50';
-            apiDocsButton.style.boxShadow = '0 4px 8px rgba(0,0,0,0.3)';
-        });
-        apiDocsButton.addEventListener('mouseleave', () => {
-            apiDocsButton.style.backgroundColor = '#34495e';
-            apiDocsButton.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
-        });
-        apiDocsButton.addEventListener('click', () => {
-            this.swaggerUI.toggle();
-        });
-
-        document.body.appendChild(apiDocsButton);
-
     }
 
     makeTexture(g){
@@ -393,10 +227,14 @@ export default class Page {
     }
 
     update() {
-        // Begin performance measurements
-        this.fpsStats.begin()
-        this.msStats.begin()
-        this.mbStats.begin()
+        // Get web components
+        const statsPanel = document.querySelector('ui-stats-panel')
+        const inputLogger = document.querySelector('ui-input-logger')
+
+        // Begin frame
+        if (statsPanel) {
+            statsPanel.beginFrame()
+        }
 
         // Update audio and get current values
         const audioData = this.audioSystem.update()
@@ -436,13 +274,15 @@ export default class Page {
         // Update Z value in real-time
         const viewMatrix = this.camera.matrixWorldInverse
         const cameraZ = -viewMatrix.elements[14]
-        const keyInfo = this.inputLogDisplay.innerHTML.split('<br>')[0]
-        const mouseInfo = this.inputLogDisplay.innerHTML.split('<br>')[1]
-        this.inputLogDisplay.innerHTML = `${keyInfo}<br>${mouseInfo}<br>Z: ${cameraZ.toFixed(2)}`
+        
+        // Update input logger with camera position
+        if (inputLogger) {
+            inputLogger.updateZ(cameraZ)
+        }
 
-        // End performance measurements
-        this.fpsStats.end()
-        this.msStats.end()
-        this.mbStats.end()
+        // End frame
+        if (statsPanel) {
+            statsPanel.endFrame()
+        }
     }
 }
