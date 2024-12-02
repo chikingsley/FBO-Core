@@ -1,14 +1,18 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "Emotion Visualization API",
+    "title": "FBO Core API",
     "version": "1.0.0",
-    "description": "Real-time emotion analysis API for visualization"
+    "description": "Real-time emotion analysis and music playback API"
   },
   "servers": [
     {
       "url": "wss://api.hume.ai/v0/stream/models",
       "description": "Hume AI WebSocket Server"
+    },
+    {
+      "url": "https://api.spotify.com/v1",
+      "description": "Spotify API Server"
     }
   ],
   "paths": {
@@ -35,23 +39,65 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/FaceResponse"
-                },
-                "example": {
-                  "face": {
-                    "predictions": [
-                      {
-                        "emotions": [
-                          {
-                            "name": "Joy",
-                            "score": 0.85
-                          }
-                        ]
-                      }
-                    ]
-                  }
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/me/player": {
+      "get": {
+        "tags": ["Spotify Playback"],
+        "summary": "Get Playback State",
+        "description": "Get information about the user's current playback state",
+        "security": [{ "spotify_auth": [] }],
+        "responses": {
+          "200": {
+            "description": "Playback state retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlaybackState"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/me/player/play": {
+      "put": {
+        "tags": ["Spotify Playback"],
+        "summary": "Start/Resume Playback",
+        "description": "Start a new context or resume current playback",
+        "security": [{ "spotify_auth": [] }],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlayRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Playback started successfully"
+          }
+        }
+      }
+    },
+    "/me/player/pause": {
+      "put": {
+        "tags": ["Spotify Playback"],
+        "summary": "Pause Playback",
+        "description": "Pause the user's playback",
+        "security": [{ "spotify_auth": [] }],
+        "responses": {
+          "204": {
+            "description": "Playback paused successfully"
           }
         }
       }
@@ -112,14 +158,12 @@
         "properties": {
           "name": {
             "type": "string",
-            "example": "Joy"
+            "description": "Name of the emotion"
           },
           "score": {
             "type": "number",
             "format": "float",
-            "minimum": 0,
-            "maximum": 1,
-            "example": 0.85
+            "description": "Confidence score for the emotion"
           }
         }
       },
@@ -144,6 +188,56 @@
                 }
               }
             }
+          }
+        }
+      },
+      "PlaybackState": {
+        "type": "object",
+        "properties": {
+          "device": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "is_active": { "type": "boolean" },
+              "name": { "type": "string" }
+            }
+          },
+          "is_playing": { "type": "boolean" },
+          "item": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "name": { "type": "string" },
+              "artists": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "PlayRequest": {
+        "type": "object",
+        "properties": {
+          "context_uri": {
+            "type": "string",
+            "description": "Spotify URI of the context to play"
+          },
+          "uris": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Array of Spotify track URIs to play"
+          },
+          "position_ms": {
+            "type": "integer",
+            "description": "Position to start playback from"
           }
         }
       },
@@ -182,6 +276,21 @@
                   }
                 }
               }
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "spotify_auth": {
+        "type": "oauth2",
+        "flows": {
+          "implicit": {
+            "authorizationUrl": "https://accounts.spotify.com/authorize",
+            "scopes": {
+              "streaming": "Spotify playback SDK",
+              "user-read-playback-state": "Read playback state",
+              "user-modify-playback-state": "Control playback state"
             }
           }
         }

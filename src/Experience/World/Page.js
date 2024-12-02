@@ -12,8 +12,9 @@ import renderFragment from '../Shaders/Particles/render.frag';
 
 import FBO from "../Utils/FBO.js";
 import Stats from 'stats.js'
-import { SwaggerUI } from '../../components/SwaggerUI.js'
 import AudioSystem from '../Audio/AudioSystem.js'
+import '../../components/ui/ApiReference.js'
+import '../../components/ui/SpotifyPlayer.js'
 
 export default class Page {
     constructor() {
@@ -41,6 +42,14 @@ export default class Page {
         // Add InputLogger
         const inputLogger = document.createElement('ui-input-logger')
         uiOverlay.appendChild(inputLogger)
+
+        // Add API Reference button
+        const apiReference = document.createElement('ui-api-reference')
+        uiOverlay.appendChild(apiReference)
+
+        // Add Spotify player
+        const spotifyPlayer = document.createElement('ui-spotify-player')
+        uiOverlay.appendChild(spotifyPlayer)
 
         // Initialize AudioSystem before FBO setup
         this.audioSystem = new AudioSystem()

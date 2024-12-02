@@ -25,6 +25,31 @@ export class SwaggerUI {
             this.container.style.display = 'none';
             this.container.style.overflow = 'auto';
 
+            // Add back button
+            const backButton = document.createElement('button');
+            backButton.textContent = '← Back';
+            backButton.style.position = 'fixed';
+            backButton.style.left = '20px';
+            backButton.style.top = '20px';
+            backButton.style.padding = '10px 20px';
+            backButton.style.fontSize = '16px';
+            backButton.style.border = 'none';
+            backButton.style.borderRadius = '5px';
+            backButton.style.backgroundColor = '#2196F3';
+            backButton.style.color = 'white';
+            backButton.style.cursor = 'pointer';
+            backButton.style.zIndex = '1001';
+            backButton.style.display = 'none';
+            backButton.style.transition = 'background-color 0.3s';
+
+            backButton.addEventListener('click', () => this.hide());
+            backButton.addEventListener('mouseenter', () => {
+                backButton.style.backgroundColor = '#1976D2';
+            });
+            backButton.addEventListener('mouseleave', () => {
+                backButton.style.backgroundColor = '#2196F3';
+            });
+
             // Add close button
             const closeButton = document.createElement('button');
             closeButton.textContent = '×';
@@ -51,19 +76,17 @@ export class SwaggerUI {
 
             document.body.appendChild(closeButton);
             document.body.appendChild(this.container);
+            document.body.appendChild(backButton);
 
             // Initialize Swagger UI with our spec
             this.ui = SwaggerUIBundle({
-                dom_id: `#${this.containerId}`,
                 spec: spec,
-                layout: 'BaseLayout',
-                presets: [
-                    SwaggerUIBundle.presets.apis
-                ],
+                dom_id: `#${this.containerId}`,
                 deepLinking: true,
-                displayRequestDuration: true,
-                filter: true,
-                tryItOutEnabled: true
+                presets: [
+                    SwaggerUIBundle.presets.apis,
+                    SwaggerUIBundle.SwaggerUIStandalonePreset
+                ],
             });
 
             // Store close button reference
@@ -76,14 +99,22 @@ export class SwaggerUI {
             this.initialize();
         }
         this.container.style.display = 'block';
-        this.closeButton.style.display = 'block';
+        // Show both close and back buttons
+        const closeButton = document.querySelector('button[style*="right: 20px"]');
+        const backButton = document.querySelector('button[style*="left: 20px"]');
+        if (closeButton) closeButton.style.display = 'block';
+        if (backButton) backButton.style.display = 'block';
         this.visible = true;
     }
 
     hide() {
         if (this.container) {
             this.container.style.display = 'none';
-            this.closeButton.style.display = 'none';
+            // Hide both close and back buttons
+            const closeButton = document.querySelector('button[style*="right: 20px"]');
+            const backButton = document.querySelector('button[style*="left: 20px"]');
+            if (closeButton) closeButton.style.display = 'none';
+            if (backButton) backButton.style.display = 'none';
             this.visible = false;
         }
     }
