@@ -1,6 +1,6 @@
 import { LitElement, html, css } from 'lit';
 import { customElement } from 'lit/decorators.js';
-import { SwaggerUI } from '../SwaggerUI.js';
+import { SwaggerUI } from '../SwaggerUI';
 
 const styles = css`
   :host {

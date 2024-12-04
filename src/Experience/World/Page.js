@@ -13,8 +13,8 @@ import renderFragment from '../Shaders/Particles/render.frag';
 import FBO from "../Utils/FBO.js";
 import Stats from 'stats.js'
 import AudioSystem from '../Audio/AudioSystem.js'
-import '../../components/ui/ApiReference.js'
-import '../../components/ui/SpotifyPlayer.js'
+import '../../components/ui/ApiReference.ts'
+import '../../components/ui/SpotifyPlayer.ts'
 
 export default class Page {
     constructor() {

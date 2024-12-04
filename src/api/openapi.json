@@ -16,6 +16,59 @@
     }
   ],
   "paths": {
+    "/api/spotify/token": {
+      "post": {
+        "tags": ["Spotify"],
+        "summary": "Exchange authorization code for access token",
+        "description": "Exchange a Spotify authorization code for an access token",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "description": "Authorization code from Spotify"
+                  }
+                },
+                "required": ["code"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Token exchange successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "access_token": {
+                      "type": "string"
+                    },
+                    "token_type": {
+                      "type": "string"
+                    },
+                    "expires_in": {
+                      "type": "integer"
+                    },
+                    "refresh_token": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Token exchange failed"
+          }
+        }
+      }
+    },
     "/face": {
       "get": {
         "tags": ["Face Analysis"],
